@@ -1,14 +1,28 @@
 module RunTracker exposing (main)
 
-import Html exposing (div, h1, img, text)
-import Html.Attributes exposing (..)
+import Html exposing (..)
+import Html.Attributes exposing (class, id, name, type_, value)
 
+type alias Model =
+    List { name : String, type_ : String, value : String }
+
+type Msg
+  = Change String
+
+view : Model -> Html Msg
 view model =
     div [ class "content" ]
         [ h1 [] [ text "Run Tracker" ]
-        , div [ id "description" ]
-          [ img [ src "http://elm-in-action.com/1.jpeg" ] [] ]
+        , form [ id "run-info" ] (List.map viewInput model)
         ]
 
+viewInput field =
+  input [ name field.name, type_ field.type_, value field.value ] []
+
+initialModel =
+  [ { name = "distance", type_ = "text", value = "" }
+  , { name = "time", type_ = "text", value = "" }
+  ]
+
 main =
-  view "no model yet"
+  view initialModel
