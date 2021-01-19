@@ -1,7 +1,10 @@
 module RunTracker exposing (main)
 
+import Browser
 import Html exposing (..)
 import Html.Attributes exposing (class, for, id, name, type_, value)
+import Html.Events exposing(onClick)
+import Dict exposing (update)
 
 type alias InputField =
   { id: String
@@ -12,16 +15,26 @@ type alias InputField =
   }
 
 type alias Model =
-  List InputField
+ { fields : List InputField
+ , distance : String
+ }
 
-type Msg =
-  Change String
+type alias Msg =
+  { action: String, data: String }
 
 view : Model -> Html Msg
 view model =
   div [ class "content" ]
       [ h1 [] [ text "Run Tracker" ]
-      , form [ id "run-info" ] (List.map viewInput model)
+      , form [ id "run-info" ]
+        [ div [] ( List.map viewInput model.fields )
+        , button 
+          [ onClick { action = "SetDistance", data = model.distance }
+          , type_ "submit"
+          ]
+          [text "Save"]
+        ]
+      , p [] [ text ( "You ran " ++ model.distance ++ " miles") ]
       ]
 
 viewInput : InputField -> Html msg
@@ -31,12 +44,26 @@ viewInput field =
         , input [ id field.id, name field.name, type_ field.type_, value field.value ] []
         ]
 
-initialModel : List { id : String, name : String, label : String, type_ : String, value : String }
+initialModel : Model
 initialModel =
-  [ { id = "run-info-distance", name = "distance", label = "Distance", type_ = "text", value = "" }
-  , { id = "run-info-time", name = "time", label = "Time", type_ = "text", value = "" }
-  ]
+  { fields =
+      [ { id = "run-info-distance", name = "distance", label = "Distance", type_ = "text", value = "" }
+      , { id = "run-info-time", name = "time", label = "Time", type_ = "text", value = "" }
+      ]
+    , distance = "0"
+  }
 
-main : Html Msg
+update : Msg -> Model -> Model
+update msg model =
+  if msg.action == "SetDistance" then
+    { model | distance = msg.data }
+  else
+    model
+
+main : Program () Model Msg
 main =
-  view initialModel
+  Browser.sandbox
+    { init = initialModel
+    , view = view
+    , update = update
+    }
